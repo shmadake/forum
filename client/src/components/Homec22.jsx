@@ -7,21 +7,19 @@ import { useState, useEffect } from "react";
 const Homec22 = () => {
   const [posts, setPosts] = useState([]);
   const [replies, setReplies] = useState([]);
+  const fetchData = async () => {
+    try {
+      const result1 = await axios.get(`${window.location.origin}/api/posts`);
+      setPosts(result1.data);
+      const result2 = await axios.get(`${window.location.origin}/api/replies`);
+      setReplies(result2.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result1 = await axios.get(`${window.location.origin}/api/posts`);
-        setPosts(result1.data);
-        const result2 = await axios.get(
-          `${window.location.origin}/api/replies`
-        );
-        setReplies(result2.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
     fetchData();
-  }, [posts, replies]);
+  }, []);
 
   return (
     <div>
