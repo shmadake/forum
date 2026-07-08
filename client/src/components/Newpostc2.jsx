@@ -1,29 +1,28 @@
 import bg from "../postbg.jpg";
 import axios from "axios";
 import { useState } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useNavigate } from "react-router-dom";
 
 const Newpostc2 = () => {
-  const { user } = useAuth0();
+  const navigate = useNavigate();
   const [data, setData] = useState({
     topic: "",
     title: "",
     content: "",
-    author: user.email,
   });
-  const handleSubmit = (e) => {
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     try {
-      axios.post(`${window.location.origin}/api/newpost`, data);
-      setData({
-        ...data,
-        title: "",
-        content: "",
-      });
-    } catch (error) {
-      console.log(error);
+      await axios.post(`${window.location.origin}/api/newpost`, data);
+      navigate("/posts");
+    } catch (err) {
+      setError(err.response?.data?.error || "Could not create post");
     }
   };
+
   return (
     <div className="bg-[#1D84B5] flex flex-row max-md:py-16 md:mx-36">
       <div className="md:w-1/2 w-full flex flex-col justify-center md:items-start items-center gap-10 md:px-10 px-5">
@@ -34,6 +33,13 @@ const Newpostc2 = () => {
           <p className="text-white md:text-4xl text-2xl font-semibold md:mb-5">
             POST FROM HERE
           </p>
+
+          {error && (
+            <p className="text-white bg-red-600 text-sm text-center py-2 px-3 w-full">
+              {error}
+            </p>
+          )}
+
           <div className="w-full flex flex-col md:gap-2 justify-center items-start">
             <p className="text-[#364355] text-sm">Topic</p>
             <select

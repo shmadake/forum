@@ -1,55 +1,74 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Auth0Provider } from "@auth0/auth0-react";
+import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import Posts from "./components/Posts";
 import Newpost from "./components/Newpost";
 import Footer from "./components/Footer";
+import Login from "./components/Login";
+import Signup from "./components/Signup";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+const Layout = ({ children }) => (
+  <div>
+    <Navbar />
+    {children}
+    <Footer />
+  </div>
+);
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: (
+      <Layout>
+        <Home />
+      </Layout>
+    ),
+  },
+  {
+    path: "/login",
+    element: (
+      <Layout>
+        <Login />
+      </Layout>
+    ),
+  },
+  {
+    path: "/signup",
+    element: (
+      <Layout>
+        <Signup />
+      </Layout>
+    ),
+  },
+  {
+    path: "/posts",
+    element: (
+      <Layout>
+        <ProtectedRoute>
+          <Posts />
+        </ProtectedRoute>
+      </Layout>
+    ),
+  },
+  {
+    path: "/posts/newpost",
+    element: (
+      <Layout>
+        <ProtectedRoute>
+          <Newpost />
+        </ProtectedRoute>
+      </Layout>
+    ),
+  },
+]);
 
 const App = () => {
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: (
-        <div>
-          <Navbar />
-          <Home />
-          <Footer />
-        </div>
-      ),
-    },
-    {
-      path: "/posts",
-      element: (
-        <div>
-          <Navbar />
-          <Posts />
-          <Footer />
-        </div>
-      ),
-    },
-    {
-      path: "/posts/newpost",
-      element: (
-        <div>
-          <Navbar />
-          <Newpost />
-          <Footer />
-        </div>
-      ),
-    },
-  ]);
-
   return (
-    <Auth0Provider
-      domain="dev-duzhhixj2wnai2n6.us.auth0.com"
-      clientId="MWTq6nbvBSMkcon8Frs4qnzyaMQr6Y9E"
-      authorizationParams={{
-        redirect_uri: window.location.origin,
-      }}
-    >
+    <AuthProvider>
       <RouterProvider router={router} />
-    </Auth0Provider>
+    </AuthProvider>
   );
 };
 

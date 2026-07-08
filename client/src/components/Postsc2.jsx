@@ -5,11 +5,11 @@ import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth } from "../context/AuthContext";
 import Skeleton from "./Skeleton";
 
 const Postsc2 = () => {
-  const { user } = useAuth0();
+  const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [replies, setReplies] = useState([]);
   const [replyModal, setReplyModal] = useState(false);
@@ -27,14 +27,13 @@ const Postsc2 = () => {
   });
   const [showAnime, setAnime] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState("");
 
   const fetchData = async () => {
     try {
       const result1 = await axios.get(`${window.location.origin}/api/posts`);
-      //console.log(result.data);
       setPosts(result1.data);
       const result2 = await axios.get(`${window.location.origin}/api/replies`);
-      console.log(result2.data);
       setReplies(result2.data);
       setLoading(false);
     } catch (error) {
@@ -50,14 +49,12 @@ const Postsc2 = () => {
     try {
       await axios.post(`${window.location.origin}/api/posts/reply/${replyId}`, {
         reply: reply,
-        author: user.email,
       });
       await fetchData();
-      //console.log(result.data);
       setReply("");
       setReplyModal(false);
     } catch (error) {
-      console.log(error);
+      setActionError(error.response?.data?.error || "Could not send reply");
     }
   };
 
@@ -68,7 +65,7 @@ const Postsc2 = () => {
       );
       await fetchData();
     } catch (error) {
-      console.log(error);
+      setActionError(error.response?.data?.error || "Could not delete reply");
     }
   };
 
@@ -78,9 +75,8 @@ const Postsc2 = () => {
         `${window.location.origin}/api/posts/delete/${postId}`
       );
       await fetchData();
-      //console.log(result.data);
     } catch (error) {
-      console.log(error);
+      setActionError(error.response?.data?.error || "Could not delete post");
     }
   };
 
@@ -93,12 +89,22 @@ const Postsc2 = () => {
       await fetchData();
       setEditModal(false);
     } catch (error) {
-      console.log(error);
+      setActionError(error.response?.data?.error || "Could not edit post");
     }
   };
 
   return (
     <div className="bg-[#FFFFFF] md:mx-20 shadow-md">
+      {actionError && (
+        <div className="fixed top-5 right-5 bg-red-600 text-white px-5 py-3 z-50">
+          <div className="flex items-center gap-3">
+            <span>{actionError}</span>
+            <button onClick={() => setActionError("")}>
+              <CloseIcon />
+            </button>
+          </div>
+        </div>
+      )}
       {replyModal && (
         <div className="fixed flex flex-col items-center justify-center inset-0 bg-black bg-opacity-30 backdrop-blur-sm">
           <div className="bg-[#1D84B5] text-white">
@@ -114,7 +120,7 @@ const Postsc2 = () => {
             </div>
             <div className="px-10 pt-4">
               <p className="text-xl">
-                Replying to {posts.find((post) => replyId === post._id).author}
+                Replying to {posts.find((post) => replyId === post._id)?.author}
               </p>
             </div>
             <div className="flex gap-5 pl-10 py-6 pb-10">
@@ -165,9 +171,7 @@ const Postsc2 = () => {
                   <option value="Sports">Sports</option>
                   <option value="Events">Events</option>
                   <option value="Clubs">Clubs</option>
-                  <option value="Other" selected>
-                    Other
-                  </option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
               <div className="w-full flex flex-col md:gap-2 justify-center items-start">
@@ -211,57 +215,31 @@ const Postsc2 = () => {
         <p className="md:text-2xl text-xl font-semibold italic py-10">POSTS</p>
       </div>
 
-      {posts.length === 0 ? (
-        <div className="flex justify-center md:justify-end items-center gap-5 px-20">
-          <div className="md:text-lg">
-            <button
-              onClick={() => {
-                setAnime(false);
-              }}
-            >
-              All Posts ({posts.length})
-            </button>
-            {!showAnime && <div className="bg-[#1D84B5] w-full h-1"></div>}
-          </div>
-          <div className="md:text-lg">
-            <button
-              onClick={() => {
-                setAnime(true);
-              }}
-            >
-              My Posts (
-              {posts.filter((post) => post.author === user.email).length})
-            </button>
-            {showAnime && <div className="bg-[#1D84B5] w-full h-1"></div>}
-          </div>
+      <div className="flex justify-center md:justify-end items-center gap-5 px-20">
+        <div className="md:text-lg">
+          <button
+            onClick={() => {
+              setAnime(false);
+            }}
+          >
+            All Posts ({posts.length})
+          </button>
+          {!showAnime && <div className="bg-[#1D84B5] w-full h-1"></div>}
         </div>
-      ) : (
-        <div className="flex justify-center md:justify-end items-center gap-5 px-20">
-          <div className="md:text-lg">
-            <button
-              onClick={() => {
-                setAnime(false);
-              }}
-            >
-              All Posts ({posts.length})
-            </button>
-            {!showAnime && <div className="bg-[#1D84B5] w-full h-1"></div>}
-          </div>
-          <div className="md:text-lg">
-            <button
-              onClick={() => {
-                setAnime(true);
-              }}
-            >
-              My Posts (
-              {user &&
-                posts.filter((post) => post.author === user.email).length}
-              )
-            </button>
-            {showAnime && <div className="bg-[#1D84B5] w-full h-1"></div>}
-          </div>
+        <div className="md:text-lg">
+          <button
+            onClick={() => {
+              setAnime(true);
+            }}
+          >
+            My Posts (
+            {user &&
+              posts.filter((post) => post.author === user.email).length}
+            )
+          </button>
+          {showAnime && <div className="bg-[#1D84B5] w-full h-1"></div>}
         </div>
-      )}
+      </div>
       {loading ? (
         <Skeleton />
       ) : (
@@ -366,12 +344,12 @@ const Postsc2 = () => {
                       .filter((reply) => reply.postId === post._id)
                       .map((reply) => {
                         return (
-                          <div className="py-1">
+                          <div className="py-1" key={reply._id}>
                             <div className="row-span-1 px-5 py-3 flex flex-row justify-between items-center border text-[#6B717E]">
                               <div className="text-sm">{reply.createdAt}</div>
                               <div className="flex gap-3 justify-center items-center">
                                 <div className="text-sm">{reply.author}</div>
-                                {reply.author === user.email && (
+                                {user && reply.author === user.email && (
                                   <button
                                     className="text-black"
                                     onClick={() => {
@@ -393,7 +371,7 @@ const Postsc2 = () => {
               );
             })}
           {posts.filter((post) =>
-            showAnime ? post.author === user.email : post.title.length > 0
+            user && showAnime ? post.author === user.email : post.title.length > 0
           ).length === 0 && (
             <div className="flex justify-center items-center text-lg py-32">
               No Posts Yet ...

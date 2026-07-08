@@ -1,37 +1,36 @@
-import { Link } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
+import { useAuth } from "../context/AuthContext";
 
-const LoginButton = () => {
-  const { loginWithRedirect } = useAuth0();
-  return (
-    <button
-      className="md:text-lg bg-[#1D84B5] md:px-5 px-3 md:py-3 py-2"
-      onClick={() => loginWithRedirect()}
-    >
-      LOGIN
-    </button>
-  );
-};
+const initials = (name = "") =>
+  name
+    .trim()
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
-const LogoutButton = () => {
-  const { logout } = useAuth0();
-  return (
-    <button
-      className="md:text-lg bg-[#1D84B5] md:px-5 px-3 md:py-3 py-2"
-      onClick={() =>
-        logout({ logoutParams: { returnTo: window.location.origin } })
-      }
-    >
-      LOGOUT
-    </button>
-  );
-};
+const Avatar = ({ name, size = "h-12 w-12" }) => (
+  <div
+    className={`${size} rounded-full bg-[#1D84B5] text-white flex items-center justify-center font-semibold`}
+  >
+    {initials(name)}
+  </div>
+);
 
 const Navbar = () => {
-  const { isAuthenticated, user } = useAuth0();
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
   const [modal, setModal] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    setModal(false);
+    navigate("/");
+  };
+
   return (
     <div className="bg-[#364253] flex flex-row justify-between items-center text-white md:px-10 px-5 py-5">
       {modal && (
@@ -47,9 +46,14 @@ const Navbar = () => {
             </div>
             <div className="flex flex-col gap-5 pb-10 px-20 justify-center items-center">
               <p className="text-lg">{user && user.email}</p>
-              <img src={user.picture} alt="profile" />
+              <Avatar name={user?.name} size="h-20 w-20" />
               <p className="text-xl">Hi, {user && user.name}!</p>
-              <LogoutButton />
+              <button
+                className="md:text-lg bg-[#1D84B5] md:px-5 px-3 md:py-3 py-2"
+                onClick={handleLogout}
+              >
+                LOGOUT
+              </button>
             </div>
           </div>
         </div>
@@ -70,11 +74,18 @@ const Navbar = () => {
               onClick={() => setModal(true)}
               className="h-12 w-12 overflow-hidden rounded-full"
             >
-              <img src={user.picture} alt="profile" />
+              <Avatar name={user?.name} />
             </button>
           </>
         )}
-        {!isAuthenticated && <LoginButton />}
+        {!isAuthenticated && (
+          <Link
+            to="/login"
+            className="md:text-lg bg-[#1D84B5] md:px-5 px-3 md:py-3 py-2"
+          >
+            LOGIN
+          </Link>
+        )}
       </div>
     </div>
   );

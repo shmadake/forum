@@ -1,20 +1,18 @@
 import bg from "../bg.jpg";
-import { useAuth0 } from "@auth0/auth0-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const LoginButton = () => {
-  const { loginWithRedirect } = useAuth0();
-  return (
-    <button
-      className="bg-[#364253] text-white md:px-8 px-5 md:py-4 py-3 md:text-lg"
-      onClick={() => loginWithRedirect()}
-    >
-      REGISTER NOW!
-    </button>
-  );
-};
+const RegisterButton = () => (
+  <Link
+    to="/signup"
+    className="bg-[#364253] text-white md:px-8 px-5 md:py-4 py-3 md:text-lg"
+  >
+    REGISTER NOW!
+  </Link>
+);
 
 const Homec21 = () => {
-  const { isAuthenticated } = useAuth0();
+  const { isAuthenticated } = useAuth();
   return (
     <div className="bg-[#1D84B5] flex flex-row max-md:py-16">
       {isAuthenticated ? (
@@ -30,7 +28,6 @@ const Homec21 = () => {
             glad to have you as a part of our growing community, and we look
             forward to your active participation!
           </p>
-          {isAuthenticated ? null : <LoginButton />}
         </div>
       ) : (
         <div className="md:w-1/2 flex flex-col justify-center md:items-start items-center gap-10 md:px-10 px-5">
@@ -45,7 +42,7 @@ const Homec21 = () => {
             community.
           </p>
 
-          {isAuthenticated ? null : <LoginButton />}
+          <RegisterButton />
         </div>
       )}
 
