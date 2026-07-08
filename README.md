@@ -2,7 +2,7 @@
 
 A full-stack MERN discussion forum where users can register, start discussion threads, reply to posts, and manage their own content. Built as a learning project and later hardened with custom authentication and access control.
 
-**Live demo:** https://forum-ashen.vercel.app
+**Live demo:** https://shmadake-forum.vercel.app
 
 ## Features
 
